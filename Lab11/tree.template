@@ -1,0 +1,10 @@
+#include "bintree.h"
+
+template <class T>
+int depth(binary_tree_node<T> *root) {
+	if (root == NULL) {
+		return - 1; 
+	} else {
+		return 2; 
+	}
+}

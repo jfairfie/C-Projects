@@ -1,0 +1,90 @@
+#include <cassert>
+
+static const int CAPACITY = 30;
+std::size_t size_a();
+std::size_t size_b();
+
+template <class T>
+T data[CAPACITY];
+int top_a;
+int top_b;
+   
+template <class T>
+stack_pair<T>::stack_pair() {
+	for (int i = 0; i < CAPACITY; i++) {
+		data[i] = NULL; 
+	}
+	top_a = 0; 
+	top_b = 29; 
+}
+
+template <class T>
+void stack_pair<T>::push_a(T item) {
+	if (!is_full_a()) {
+		data[top_a] = item; 
+		top_a++; 
+	} else {
+		std::cout << "The program is full and cannot add anything" << std::endl; 
+	}
+}
+
+template <class T>
+void stack_pair<T>::push_b(T item) {
+	assert(!is_full_b()); 
+	if (!is_full_b()) {
+		data[top_b] = item; 
+		top_b--; 
+	} else {
+		std::cout << "The program is full and cannot add anything" << std::endl; 
+	}
+}
+
+template <class T>
+T stack_pair<T>::pop_a() {
+	assert(!is_empty_a()); 
+	top_a--; 
+	T temp = data[top_a]; 
+	data[top_a] = NULL; 
+	return temp; 
+}
+
+template <class T>
+T stack_pair<T>::pop_b() {
+	assert(!is_empty_b()); 
+	top_b++; 
+	T temp = data[top_b]; 
+	data[top_b] = NULL; 
+	return temp; 
+}
+
+template <class T>
+bool stack_pair<T>::is_empty_a() const {
+	if (top_a == 0) {
+		return true; 
+	}
+	return false; 
+}
+
+template <class T>
+bool stack_pair<T>::is_empty_b() const {
+	if (top_b == 29) {
+		return true; 
+	}
+	return false; 
+}
+
+template <class T>
+bool stack_pair<T>::is_full_a() const {
+	if (top_a > top_b) {
+		return true; 
+	}
+	return false; 
+}
+
+template <class T>
+bool stack_pair<T>::is_full_b() const {
+	if (top_b < top_a) {
+		return true; 
+	}
+	return false; 
+}    
