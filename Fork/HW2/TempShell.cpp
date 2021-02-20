@@ -22,7 +22,7 @@ int main(void)
 		//Recieving Input from User
 		string str;  
 
-		getline(cin, str); 
+		getline(cin, str)
 		
 		int index = 0;
 		int k = 0;
@@ -61,6 +61,7 @@ int main(void)
 		{
 			perror("Error -- Failed to fork()"); 
 			return 1; 
+		}
 		}
 	}
 
