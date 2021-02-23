@@ -1,125 +1,116 @@
-#include <unistd.h>
-#include <limits>
-#include <iostream>
-#include <string> 
-#include <cstring> 
-#include <sys/wait.h>
+#include <iostream> 
+#include <stdio.h>
+#include <unistd.h> 
+#include <sys/wait.h> 
+#include <string>
+#include <string.h>
+#include <cstring>
 
-#define MAXLENGTH 100 //Number of characters supported in command
+#define MAXLINE 80
 
 using namespace std;
 
-void execArgs(char** command)
+int main(void)
 {
-	pid_t child_pid = fork();
+	char *args[MAXLINE/2 + 1];
+	char *pipeargs[MAXLINE/2 + 1];
+	int should_run = 1;
+	char command[MAXLINE];
+		
 
-	cout << command[0] << " " << command[1] << endl;
-
-	//Child Process
-	if (child_pid == 0)
+	while (should_run)
 	{
-		wait(NULL);
-	} else if (child_pid > 0) { //Parent Process
-		execvp(command[0], command);
-	} else { //Error forking 
-		printf("Failed to fork");
-	}
-
-}
-
-void execPiped(char** command, char** command2)
-{
-	int pipefd[2];
-	pid_t child_pid1, child_pid2;
-
-	if (pipe(pipefd) < 0)
-	{
-		printf("Pipe failed");
-	}
-
-	child_pid1 = fork();
-	//Child 
-	if (child_pid1 == 0)
-	{
-		close (pipefd[0]);
-		dup2(pipefd[1], 1);
-		//execlp("ls", "ls", "-l", NULL);
-		execvp(command[0], command);
-	} else 
-	{
-		child_pid2 = fork();
-		if (child_pid2 == 0)
-		{
-			close(pipefd[1]);
-			dup2(pipefd[0], 0);
-			close(pipefd[0]);
-			//execlp("wc", "wc", "-l", NULL);
-			execvp(command2[0], command2);
+		
+		printf("mysh ");
+		
+		//Checking for end of script file
+		if (cin.eof()) {
+			return 0;
 		}
-	}
-	waitpid(child_pid1, 0, 0);
-	close(pipefd[1]);
-	waitpid(child_pid2, 0, 0);
-}
-
-int main(int argc, char *argv[])
-{
-
-
-	char* args[MAXLENGTH];
-	char command[MAXLENGTH];
-
-	printf("myshl >> ");
-	cin.getline(command, MAXLENGTH);
-	string str;
-	int index = 0;
-
-	//Parsing user input into command
-	for (int i = 0; i < MAXLENGTH; i++)
-	{
-		if (command[i] == ' ' || command[i] == -1)
+		cin.getline(command, MAXLINE/2+1);
+		
+		//Obtaining tokens from user input 
+		char *pch; 
+		pch = strtok(command, " ");
+		int index = 0;
+		int pipIndex = 0;
+		int pip = 0;
+		
+		while (pch != NULL)
 		{
-			if (str.length() > 0)
-			{
-				args[index] = strcpy(new char[str.length() + 1], str.c_str());
-				str = "";
+			if (strcmp(pch, "|") == 0) {
+				pip = 1;
+				args[index] = NULL;
+				index = 0;
+			} else if (pip == 0) {
+				args[index] = pch;
+				index += 1;
+			} else if (pip == 1) {
+				pipeargs[index] = pch;
 				index += 1;
 			}
-		} else if (command[i] != -1) {
-			str += command[i];
+			
+			
+			pch = strtok(NULL, " ");
 		}
-	}
+		
+		if (pip == 1) {
+			pipeargs[index] = NULL;
+		}
+		
+		if (pip == 0) {
 
-	args[index] = NULL;
+			pid_t child_pid = fork();
 
-	while (index > 0) 
-	{
-		index--;
+			//Child Process
+			if (child_pid == 0)
+			{
+				execvp(args[0], args);   
+			}
+			//Parent Process
+			else if (child_pid > 0) 
+			{
+				wait(NULL); 
+			}
+			else
+			{
+				perror("Error -- Failed to fork()"); 
+				return 1; 
+			}
+		} else {
+			int pipefd[2];
+			pid_t child_pid1, child_pid2;
 
-		if (strcmp(args[index], "|") == 0)
-		{
-			//Process through pipe
-			args[index] = NULL;
-			char* piped[MAXLENGTH];
-
-			for (int i = index+1; i < MAXLENGTH; i++) {
-				piped[i - (index + 1)] = args[i];
-				args[i] = NULL;
+			if (pipe(pipefd) < 0)
+			{
+				printf("Pipe Failed");
 			}
 
-			execPiped(args, piped);
-			break;
-		} else if (index == 0)
-		{
-			//Process traditionally using fork() only
-			execArgs(args);
+			child_pid1 = fork();
+			if (child_pid1 == 0)
+			{
+				close(pipefd[0]);
+				dup2(pipefd[1], 1);
+				//execlp("ls", "ls", "-l", NULL);
+				execvp(args[0], args);
+			} else {
+				child_pid2 = fork();
+				if (child_pid2 == 0)
+				{
+					close(pipefd[1]);
+					dup2(pipefd[0], 0);
+					close(pipefd[0]);
+					//execlp("wc", "wc", "-l", NULL);
+					execvp(pipeargs[0], pipeargs);
+				}
+			}
+			waitpid(child_pid1, 0, 0);
+			close(pipefd[1]);
+			waitpid(child_pid2, 0, 0);
 		}
+		
 	}
-
-	cout << "ending command " << command << endl;
-	cin.ignore (numeric_limits<streamsize>::max(), '\n');
-	printf("myshl >> ");
-	cin.getline(command, MAXLENGTH);
-	cout << "ending command2 " << command << endl;
+		
+		
 	return 0;
 }
