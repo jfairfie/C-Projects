@@ -1,2 +1,6 @@
 ls -lsa
 ps -aes
+mkdir Test
+ls | wc
+ls | wc -l
+ls 

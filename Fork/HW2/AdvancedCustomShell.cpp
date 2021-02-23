@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <limits>
 #include <iostream>
 #include <string> 
 #include <cstring> 
@@ -63,14 +64,11 @@ void execPiped(char** command, char** command2)
 
 int main(int argc, char *argv[])
 {
-	int times = 5;
 
-	while(times > 0)
-	{
 
 	char* args[MAXLENGTH];
 	char command[MAXLENGTH];
-	fflush(stdout);
+
 	printf("myshl >> ");
 	cin.getline(command, MAXLENGTH);
 	string str;
@@ -117,7 +115,11 @@ int main(int argc, char *argv[])
 			execArgs(args);
 		}
 	}
-	times--;
-	}
+
+	cout << "ending command " << command << endl;
+	cin.ignore (numeric_limits<streamsize>::max(), '\n');
+	printf("myshl >> ");
+	cin.getline(command, MAXLENGTH);
+	cout << "ending command2 " << command << endl;
 	return 0;
 }
