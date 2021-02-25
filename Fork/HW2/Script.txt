@@ -4,3 +4,4 @@ mkdir Test
 ls | wc
 ls | wc -l
 ls 
+exit

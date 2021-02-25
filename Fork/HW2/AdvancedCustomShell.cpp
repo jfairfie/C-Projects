@@ -50,6 +50,9 @@ int main(void)
 				index += 1;
 			}
 			
+			if (strcmp(pch, "exit") == 0) {
+				return 0;
+			}
 			
 			pch = strtok(NULL, " ");
 		}
